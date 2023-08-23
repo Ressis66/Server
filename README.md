@@ -1,4 +1,4 @@
-To verify that Swagger api-docs, we can visit this URL in our browser:
+To verify Swagger api-docs, we can visit this URL in our browser:
 
 http://localhost:8080/v2/api-docs
 
