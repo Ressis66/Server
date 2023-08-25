@@ -11,5 +11,7 @@ public interface PostService {
 
     List<PostServiceModel> getAllPosts(String timelineUserId);
 
+    List<PostServiceModel> getAllFriendsPosts(String loggInUserId) throws Exception;
+
     CompletableFuture<Boolean> deletePost(String loggedInUserId, String postToRemoveId) throws Exception;
 }

@@ -1,16 +1,20 @@
 package kl.socialnetwork.servicesImpl;
 
 import kl.socialnetwork.domain.entities.Post;
+import kl.socialnetwork.domain.entities.Relationship;
 import kl.socialnetwork.domain.entities.User;
 import kl.socialnetwork.domain.entities.UserRole;
 import kl.socialnetwork.domain.models.bindingModels.post.PostCreateBindingModel;
 import kl.socialnetwork.domain.models.serviceModels.PostServiceModel;
+import kl.socialnetwork.domain.models.serviceModels.RelationshipServiceModel;
 import kl.socialnetwork.repositories.PostRepository;
 import kl.socialnetwork.repositories.RoleRepository;
 import kl.socialnetwork.repositories.UserRepository;
 import kl.socialnetwork.services.PostService;
+import kl.socialnetwork.services.RelationshipService;
 import kl.socialnetwork.validations.serviceValidation.services.PostValidationService;
 import kl.socialnetwork.validations.serviceValidation.services.UserValidationService;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -34,15 +38,17 @@ public class PostServiceImpl implements PostService {
     private final ModelMapper modelMapper;
     private final PostValidationService postValidationService;
     private final UserValidationService userValidationService;
-
+    private final RelationshipService relationshipService;
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,  RoleRepository roleRepository, ModelMapper modelMapper, PostValidationService postValidationService, UserValidationService userValidationService) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,  RoleRepository roleRepository, ModelMapper modelMapper,
+                           RelationshipService relationshipService, PostValidationService postValidationService, UserValidationService userValidationService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.modelMapper = modelMapper;
         this.postValidationService = postValidationService;
         this.userValidationService = userValidationService;
+        this.relationshipService= relationshipService;
     }
 
     @Override
@@ -87,6 +93,20 @@ public class PostServiceImpl implements PostService {
                         .map(post, PostServiceModel.class))
 
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PostServiceModel> getAllFriendsPosts(String loggInUserId) throws Exception {
+        List<PostServiceModel> postsListQuery = new ArrayList<>();
+        List<RelationshipServiceModel> relList =relationshipService.findAllUserRelationshipsWithStatus(loggInUserId);
+        for (RelationshipServiceModel rel: relList){
+            String id = rel.getUserTwo().getId();
+            List <PostServiceModel> postsList = getAllPosts(id);
+            for (PostServiceModel post: postsList){
+                postsListQuery.add(post);
+            }
+        }
+        return postsListQuery;
     }
 
     @Async

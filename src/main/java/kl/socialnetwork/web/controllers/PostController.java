@@ -9,6 +9,10 @@ import kl.socialnetwork.utils.responseHandler.exceptions.CustomException;
 import kl.socialnetwork.utils.responseHandler.successResponse.SuccessResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -63,6 +67,29 @@ public class PostController {
         } catch (Exception e) {
             throw new CustomException(SERVER_ERROR_MESSAGE);
         }
+    }
+
+    @GetMapping(value = "/allFriends/{id}",params = { "page", "size" })
+    public Page<PostAllViewModel> getAllFriendsPosts(@RequestParam("page") int page,
+                                                     @RequestParam("size") int size,
+                                                     @PathVariable(value = "id") String timelineUserId) {
+
+        try {
+            Pageable pageRequest = PageRequest.of(page, size);
+            List<PostServiceModel> postServiceAllFriendsPosts = this.postService.getAllFriendsPosts(timelineUserId);
+            List <PostAllViewModel> posts= postServiceAllFriendsPosts.stream().map(postServiceModel -> {
+                PostAllViewModel postAllViewModel = this.modelMapper.map(postServiceModel, PostAllViewModel.class);
+                postAllViewModel.setPostId(postServiceModel.getId());
+                return postAllViewModel;
+            }).collect(Collectors.toList());
+            int start = (int) pageRequest.getOffset();
+            int end = Math.min((start + pageRequest.getPageSize()), posts.size());
+            List<PostAllViewModel> pageContent = posts.subList(start, end);
+            return new PageImpl<>(pageContent, pageRequest, posts.size());
+        } catch (Exception e) {
+            throw new CustomException(SERVER_ERROR_MESSAGE);
+        }
+
     }
 
     @PostMapping(value = "/remove")
