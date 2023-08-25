@@ -75,6 +75,7 @@ public class ApplicationSecurityConfiguration
                         "/post/create",
                         "/post/remove",
                         "/post/all/*",
+                        "/post/allFriends/*",
                         "/message/create",
                         "/message/all/*",
                         "/message/friend",
